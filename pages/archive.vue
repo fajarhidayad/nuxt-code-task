@@ -1,14 +1,10 @@
 <script setup lang='ts'>
-import { useMailStore } from '~/stores/mail';
-
 definePageMeta({
   title: 'Inbox',
   layout: 'default'
 })
 
-const drawerMail = useMailStore()
-
-const mails = [
+const archives = [
   {
     title: "Title 1",
     selected: false,
@@ -25,7 +21,7 @@ const mails = [
     isRead: true
   },
 ]
-const selectedMail = ref([])
+const selectedArchives = ref([])
 
 const selectAll = ref(false)
 </script>
@@ -33,9 +29,10 @@ const selectAll = ref(false)
 <template>
   <NuxtLayout>
     <template #header>
-      Inbox
+      Archive
     </template>
     <template #default>
+      <Title>Archive</Title>
       <section style="position: relative;">
         <Title>Inbox</Title>
         <div class="mail-list__head">
@@ -46,13 +43,10 @@ const selectAll = ref(false)
         </div>
 
         <ul>
-          <MailItem v-for="mail in mails" :checked="mail.selected" :is-read="mail.isRead" @click="drawerMail.open">
+          <MailItem v-for="mail in archives" :checked="mail.selected" :is-read="mail.isRead">
             Wave hello with video
           </MailItem>
         </ul>
-        <Teleport to="body">
-          <Drawer v-if="drawerMail.isOpen" />
-        </Teleport>
       </section>
     </template>
   </NuxtLayout>
