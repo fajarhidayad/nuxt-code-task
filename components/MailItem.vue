@@ -1,20 +1,20 @@
 <script setup lang='ts'>
 interface MailItemProps {
-  checked: boolean;
+  isSelected: boolean;
   isRead: boolean;
 }
 
-const { checked, isRead } = defineProps<MailItemProps>()
-
-const selected = ref(false)
+const { isSelected, isRead } = defineProps<MailItemProps>()
+const drawerMail = useMailStore()
+const selected = ref(isSelected)
 </script>
 
 <template>
-  <li :class="{
+  <li @click="drawerMail.open" :class="{
     'mail-list__item': true,
     'mail-list__item-read': isRead
   }">
-    <input type="checkbox" :value="checked" v-model="selected" />
+    <input type="checkbox" :value="isSelected" v-model="selected" @click.stop />
     <h3>
       <slot />
     </h3>
@@ -39,7 +39,7 @@ const selected = ref(false)
   }
 
   &-read {
-    background-color: #F3F6FB;
+    background-color: #D1E2FF;
   }
 
   input {

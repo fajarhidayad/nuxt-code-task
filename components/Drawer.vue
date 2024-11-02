@@ -2,15 +2,32 @@
 import { useMailStore } from '~/stores/mail';
 
 const mail = useMailStore()
+
+const btnRef = ref(undefined)
+
+function handleKeyEscape(event: any) {
+  if (event.key === 'Escape') {
+    mail.close()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keyup', handleKeyEscape)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keyup', handleKeyEscape)
+})
 </script>
 
 <template>
-  <div class="drawer">
+  <div class="drawer" @click="mail.close">
     <div class="drawer-bg">
     </div>
     <section class="drawer-dialog">
       <div class="drawer-dialog__top">
-        <button class="close-btn" @click="mail.close">Close (Esc)</button>
+        <button :ref="btnRef" class="close-btn" @click="mail.close">Close
+          (Esc)</button>
         <MailReadButton />
         <MailArchiveButton />
       </div>
@@ -35,13 +52,12 @@ const mail = useMailStore()
   height: 100vh;
 
   &-bg {
-    position: fixed;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.445);
+    top: 0;
+    z-index: 120;
     width: 100vw;
     height: 100vh;
-    background-color: black;
-    opacity: 50%;
-    z-index: 120;
-    padding: 32px;
   }
 
   &-dialog {
@@ -75,5 +91,43 @@ const mail = useMailStore()
   margin-right: auto;
   border: none;
   background-color: transparent;
+  cursor: pointer;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: all 0.6s ease-in-out;
+
+  .drawer-dialog {
+    transition: all 0.5s ease-out;
+  }
+
+  .drawer-bg {
+    transition: all 0.5s ease-out;
+  }
+}
+
+.v-enter-from,
+.v-leave-to {
+  .drawer-dialog {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+
+  .drawer-bg {
+    opacity: 0
+  }
+}
+
+.v-enter-to,
+.v-leave-from {
+  .drawer-dialog {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .drawer-bg {
+    opacity: 1
+  }
 }
 </style>
