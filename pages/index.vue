@@ -1,42 +1,38 @@
 <script setup lang='ts'>
+
 definePageMeta({
   title: 'Inbox',
   layout: 'default'
 })
 
-interface Mail {
-  id: number;
-  title: string;
-  isRead: boolean;
-}
-
-const drawerMail = useMailStore()
-
-const mails = ref<Mail[]>([
-  {
-    id: 1,
-    title: "Title 1",
-    isRead: false
-  },
-  {
-    id: 2,
-    title: "Title 2",
-    isRead: false
-  },
-  {
-    id: 3,
-    title: "Title 3",
-    isRead: true
-  },
-])
+const mailStore = useMailStore()
 const selectedMails = ref<number[]>([]);
 
-const isAllSelected = ref<boolean>(false)
+const isAllSelected = computed({
+  get() {
+    if (selectedMails.value.length !== mailStore.mails.length || selectedMails.value.length === 0) {
+      return false;
+    } else {
+      return true;
+    }
+  },
+  set(value) {
+    return value
+  }
+})
+
+function updateSelectedMail(id: number) {
+  if (selectedMails.value.find(item => item === id)) {
+    selectedMails.value = selectedMails.value.filter(item => item !== id)
+  } else {
+    selectedMails.value.push(id)
+  }
+}
 
 function toggleSelectAll() {
   if (!isAllSelected.value) {
     selectedMails.value = []
-    for (var mail of mails.value) {
+    for (var mail of mailStore.mails) {
       selectedMails.value.push(mail.id);
     }
     isAllSelected.value = true
@@ -44,15 +40,6 @@ function toggleSelectAll() {
     isAllSelected.value = false;
     selectedMails.value = []
   }
-}
-
-function selectMail() {
-  if (selectedMails.value.length !== mails.value.length) {
-    isAllSelected.value = false;
-  } else {
-    isAllSelected.value = true;
-  }
-  console.log(selectedMails.value);
 }
 
 </script>
@@ -66,23 +53,18 @@ function selectMail() {
       <section style="position: relative;">
         <Title>Inbox</Title>
         <div class="mail-list__head">
-          <input type="checkbox" :checked="isAllSelected" @click="toggleSelectAll" />
+          <input type="checkbox" :checked="isAllSelected" @click="toggleSelectAll"
+            :disabled="mailStore.mails.length < 1" />
           <strong v-if="selectedMails.length > 0">Email Selected ({{ selectedMails.length }})</strong>
           <strong v-else>Select all</strong>
           <MailReadButton v-if="selectedMails.length > 0" />
-          <MailArchiveButton v-if="selectedMails.length > 0" />
+          <!-- <MailArchiveButton v-if="selectedMails.length > 0" :mail="" /> -->
         </div>
 
         <ul>
-          <li v-for="mail in mails" @click="drawerMail.open" :class="{
-            'mail-list__item': true,
-            'mail-list__item-read': mail.isRead
-          }">
-            <input type="checkbox" v-model="selectedMails" :value="mail.id" @click.stop="selectMail" />
-            <h3>
-              {{ mail.title }}
-            </h3>
-          </li>
+          <MailItem v-for="(mail) in mailStore.mails" :key="mail.id" :mail="mail"
+            :is-selected="selectedMails.find(item => item === mail.id) !== undefined"
+            @@select-mail="updateSelectedMail" />
         </ul>
 
       </section>
@@ -115,35 +97,6 @@ function selectMail() {
       svg {
         margin-right: 12px;
       }
-    }
-  }
-
-  &__item {
-    display: flex;
-    border-top: 1px solid #E5E7EB;
-    border-bottom: 0;
-    border-left: 0;
-    border-right: 0;
-    padding: 20px 24px;
-    width: 100%;
-    background-color: transparent;
-    cursor: pointer;
-
-
-    &:hover {
-      background-color: #eaeff9;
-    }
-
-    &-read {
-      background-color: #D1E2FF;
-    }
-
-    input {
-      margin-right: 20px;
-    }
-
-    h3 {
-      font-size: 14px;
     }
   }
 }

@@ -1,29 +1,46 @@
 <script setup lang='ts'>
+
 definePageMeta({
   title: 'Inbox',
   layout: 'default'
 })
 
-const archives = [
-  {
-    title: "Title 1",
-    selected: false,
-    isRead: false
-  },
-  {
-    title: "Title 2",
-    selected: false,
-    isRead: false
-  },
-  {
-    title: "Title 3",
-    selected: false,
-    isRead: true
-  },
-]
-const selectedArchives = ref([])
+const mailStore = useMailStore()
+const selectedArchives = ref<number[]>([])
 
-const selectAll = ref(false)
+const isAllSelected = computed({
+  get() {
+    if (selectedArchives.value.length !== mailStore.archivedMails.length && mailStore.archivedMails.length > 0) {
+      return false;
+    } else {
+      return true;
+    }
+  },
+  set(value) {
+    return value
+  }
+})
+
+function updateSelectedMail(id: number) {
+  if (selectedArchives.value.find(item => item === id)) {
+    selectedArchives.value = selectedArchives.value.filter(item => item !== id)
+  } else {
+    selectedArchives.value.push(id)
+  }
+}
+
+function toggleSelectAll() {
+  if (!isAllSelected.value) {
+    selectedArchives.value = []
+    for (var mail of mailStore.archivedMails) {
+      selectedArchives.value.push(mail.id);
+    }
+    isAllSelected.value = true
+  } else {
+    isAllSelected.value = false;
+    selectedArchives.value = []
+  }
+}
 </script>
 
 <template>
@@ -36,16 +53,18 @@ const selectAll = ref(false)
       <section style="position: relative;">
         <Title>Inbox</Title>
         <div class="mail-list__head">
-          <input type="checkbox" :checked="selectAll" @change="" />
-          <strong>Email Selected (12)</strong>
-          <MailReadButton />
-          <MailArchiveButton />
+          <input type="checkbox" :checked="isAllSelected" @click="toggleSelectAll"
+            :disabled="mailStore.archivedMails.length < 1">
+          <strong v-if="selectedArchives.length > 0">Email Selected ({{ selectedArchives.length }})</strong>
+          <strong v-else>Select all</strong>
+          <MailReadButton v-if="selectedArchives.length > 0" />
+          <!-- <MailArchiveButton v-if="selectedMails.length > 0" :mail="" /> -->
         </div>
 
         <ul>
-          <MailItem v-for="mail in archives" :checked="mail.selected" :is-read="mail.isRead">
-            Wave hello with video
-          </MailItem>
+          <MailItem v-for="mail in mailStore.archivedMails" :key="mail.id" :mail="mail"
+            @@select-mail="updateSelectedMail"
+            :is-selected="selectedArchives.find(item => item === mail.id) !== undefined" />
         </ul>
       </section>
     </template>

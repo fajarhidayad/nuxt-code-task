@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-const drawerMail = useMailStore();
+const mailStore = useMailStore();
 </script>
 
 <template>
@@ -12,8 +12,8 @@ const drawerMail = useMailStore();
       <slot />
     </main>
     <Teleport to="body">
-      <Transition>
-        <Drawer v-if="drawerMail.isOpen" />
+      <Transition :duration="500">
+        <Drawer v-if="mailStore.isDrawerOpen" />
       </Transition>
     </Teleport>
   </div>

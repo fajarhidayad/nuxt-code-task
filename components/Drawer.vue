@@ -1,44 +1,45 @@
 <script setup lang='ts'>
 import { useMailStore } from '~/stores/mail';
 
-const mail = useMailStore()
+const mailStore = useMailStore()
 
 const btnRef = ref(undefined)
 
-function handleKeyEscape(event: any) {
+function handleKey(event: any) {
   if (event.key === 'Escape') {
-    mail.close()
+    mailStore.closeDrawer()
+  }
+  if (event.key === "a") {
+    mailStore.archive(mailStore.currentMail!)
   }
 }
 
 onMounted(() => {
-  window.addEventListener('keyup', handleKeyEscape)
+  window.addEventListener('keyup', handleKey)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('keyup', handleKeyEscape)
+  window.removeEventListener('keyup', handleKey)
 })
 </script>
 
 <template>
-  <div class="drawer" @click="mail.close">
+  <div class="drawer" @click="mailStore.closeDrawer">
     <div class="drawer-bg">
     </div>
-    <section class="drawer-dialog">
+    <section class="drawer-dialog" @click.stop>
       <div class="drawer-dialog__top">
-        <button :ref="btnRef" class="close-btn" @click="mail.close">Close
+        <button :ref="btnRef" class="close-btn" @click="mailStore.closeDrawer">Close
           (Esc)</button>
-        <MailReadButton />
-        <MailArchiveButton />
+        <MailReadButton @click="mailStore.read(mailStore.currentMail!.id)" />
+        <MailArchiveButton type="" :mail="mailStore.currentMail!" />
       </div>
 
       <h1 class="drawer-title">
-        Wave hello with video, reactions and more now in huddles
+        {{ mailStore.currentMail?.title }}
       </h1>
-      <p class="drawer-body">In the early days of the pandemic, audio-only huddles helped recreate the informal
-        discussions that
-        traditionally took place in office cafés and hallways. Whether your team is remote, in the office, or a mix of
-        both, working alongside your colleagues is as important as ever.</p>
+      <p class="drawer-body" v-if="mailStore.currentMail?.body">{{ mailStore.currentMail?.body }}</p>
+      <p class="drawer-body__empty" v-else>empty</p>
     </section>
   </div>
 </template>
@@ -84,6 +85,10 @@ onUnmounted(() => {
   &-body {
     font-size: 14px;
     line-height: 1.4;
+
+    &__empty {
+      color: #4b55638a;
+    }
   }
 }
 
